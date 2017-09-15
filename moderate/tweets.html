@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tweets - Twitter Display</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/css/sb-admin.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="/css/plugins/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        .panel-heading .accordion-toggle:after {
+            font-family: 'Glyphicons Halflings';
+            content: "\e114";
+            float: right;
+            color: grey;
+        }
+
+        .panel-heading .accordion-toggle.collapsed:after {
+            content: "\e080";
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/moderate">Twitter Display</a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li id="showStatus">
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> User <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a href="/moderate"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li class="active">
+                        <a href="/moderate/tweets"><i class="fa fa-fw fa-twitter-square"></i> Tweets</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/shows"><i class="fa fa-fw fa-film"></i> Shows</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/start_show"><i class="fa fa-fw fa-play"></i> Start Show</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/stop_show"><i class="fa fa-fw fa-stop"></i> Stop Show</a>
+                    </li>
+                    <li>
+                        <a href="/display"><i class="fa fa-fw fa-eye"></i> View Show <span id="displayCount" class="badge"></span></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Tweets
+                            <small>Moderate all incoming tweets for the show: </small>
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li>
+                                <i class="fa fa-dashboard"></i>  <a href="/moderate">Dashboard</a>
+                            </li>
+                            <li class="active">
+                                <i class="fa fa-twitter-square"></i> Tweets
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- Alert Area -->
+                <div class="row">
+                    <div class="col-lg-12" id="alertArea">
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- Tweets -->
+                <div id="tweetArea" class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4><strong>Past and Incoming Tweets will show below</strong></h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="panel-group" id="accordion">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                var socket = io.connect();
+                socket.emit('moderator');
+
+                var $alertArea = $('#alertArea');
+                var $tweetArea = $('#tweetArea');
+                var $accordion = $('#accordion');
+
+                socket.on('new tweet', function(data) {
+                    $accordion.append(displayTweet(data));
+
+                    $('.authorized').off().click(function() {
+                        socket.emit('tweet authorized', {tweetId: $(this).attr('value')});
+                    });
+
+                    $('.unauthorized').off().click(function() {
+                        socket.emit('tweet unauthorized', {tweetId: $(this).attr('value')});
+                    });
+
+                });
+
+                socket.on('old tweets', function(data) {
+
+                    for (i = 0; i < data.length; i++) {
+                        $accordion.append(displayTweet(data[i]));
+
+                        $('.authorized').off().click(function() {
+                            socket.emit('tweet authorized', {tweetId: $(this).attr('value')});
+                        });
+
+                        $('.unauthorized').off().click(function() {
+                            socket.emit('tweet unauthorized', {tweetId: $(this).attr('value')});
+                        });
+                    }
+
+                });
+
+                socket.on('tweet status', function(data) {
+                    if (data.success === true) {
+                        $alertArea.append(
+                            '<div class="alert alert-success alert-dismissable" role="alert">' +
+                                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+                                '<i class="fa fa-info-circle"></i> <strong>Success!</strong> The tweet has been <strong>' + data.status + '</strong> successfully.' +
+                            '</div>'
+                        );
+                        $('#panel-tweet' + data.tweetId).slideUp(300);
+                    } else {
+                        $alertArea.append(
+                            '<div class="alert alert-warning alert-dismissable" role="alert">' +
+                                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+                                '<i class="fa fa-info-circle"></i> <strong>Warning!</strong> Something went wrong during your request. Please try again later.' +
+                            '</div>'
+                        );
+                    }
+
+                    $('.alert-dismissable').off().fadeTo(1000*3, 1).slideUp(1000, function() {
+                        $('.alert-dismissable').off().remove();
+                    });
+                });
+
+
+                socket.on('updateInfo', function(data) {
+                    $('#displayCount').html(data.displayCount);
+                    $('small').append('<strong>' + data.show.title + '</strong>');
+                    if (data.show.running === true) {
+                        socket.emit('get old tweets');
+                        $('#showStatus').html('<button class="btn btn-success navbar-btn">Current Show: ' + data.show.title +'</button>');
+                    } else {
+                        $('#showStatus').html('<button class="btn btn-danger navbar-btn">Current Show: ' + data.show.title +'</button>');
+
+                        $alertArea.html('');
+                        $alertArea.append(
+                            '<div class="alert alert-warning" role="alert"><i class="fa fa-info-circle"></i> Warning! Tweets will not show since there is not a show running. To start a show click <a href="/moderate/start_show">here</a>.</div>'
+                        );
+                    }
+                });
+
+                function displayTweet(data) {
+                    return '<div id="panel-tweet' + data.id + '" class="panel panel-default">' +
+                                '<div class="panel-heading">' +
+                                    '<img src="' + data.profile_image_url + '" alt="User Profile Image" />' +
+                                    '<h4 class="panel-title">' +
+                                        '<a class="accordion-toggle" data-toggle="collapse" data-parent="#" href="#collapse' + data.id + '"><strong>' + data.user_name + '</strong> tweeted on ' + data.created_at + '</a>' +
+                                    '</h4>' +
+                                '</div>' +
+                                '<div id="collapse' + data.id + '" class="panel-collapse collapse">' +
+                                    '<div class="panel-body">' +
+                                        '<img src="' + data.image_url + '" alt="Tweet Image" width="400" height="200"/>' +
+                                    '</div>' +
+                                    '<div class="panel-footer">' +
+                                        '<p>' + data.text + '</p>' +
+                                    '</div>' +
+                                    '<div class="panel-footer">' +
+                                        '<div class="btn-group btn-sm">' +
+                                            '<button class="btn btn-success authorized" value="' + data.id + '"><i class="fa fa-check" aria-hidden="true"></i></button>' +
+                                            '<button class="btn btn-danger unauthorized" value="' + data.id + '"><i class="fa fa-times" aria-hidden="true"></i></button>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>'
+                };
+            });
+        </script>
+
+</body>
+
+</html>

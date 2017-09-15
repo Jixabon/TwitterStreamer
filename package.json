@@ -1,0 +1,19 @@
+{
+  "name": "twitterdisplay",
+  "version": "1.0.0",
+  "description": "Display Tweets with images based on filter terms",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Shawn Holmes",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "*",
+    "express": "*",
+    "express-session": "*",
+    "twit": "*",
+    "mysql": "*"
+  }
+}

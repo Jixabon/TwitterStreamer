@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Shows - Twitter Display</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/css/sb-admin.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="/css/plugins/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        .panel-heading .accordion-toggle:after {
+            font-family: 'Glyphicons Halflings';
+            content: "\e114";
+            float: right;
+            color: grey;
+        }
+
+        .panel-heading .accordion-toggle.collapsed:after {
+            content: "\e080";
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/moderate">Twitter Display</a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li id="showStatus">
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> User <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a href="/moderate"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/tweets"><i class="fa fa-fw fa-twitter-square"></i> Tweets</a>
+                    </li>
+                    <li class="active">
+                        <a href="/moderate/shows"><i class="fa fa-fw fa-film"></i> Shows</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/start_show"><i class="fa fa-fw fa-play"></i> Start Show</a>
+                    </li>
+                    <li>
+                        <a href="/moderate/stop_show"><i class="fa fa-fw fa-stop"></i> Stop Show</a>
+                    </li>
+                    <li>
+                        <a href="/display"><i class="fa fa-fw fa-eye"></i> View Show <span id="displayCount" class="badge"></span></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Shows
+                            <small>Information about current and old shows</small>
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li>
+                                <i class="fa fa-dashboard"></i>  <a href="/moderate">Dashboard</a>
+                            </li>
+                            <li class="active">
+                                <i class="fa fa-film"></i> Shows
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- Alert Area -->
+                <div class="row">
+                    <div class="col-lg-12" id="alertArea">
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- Tweets -->
+                <div id="tweetArea" class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4><strong>Current Show</strong></h4>
+                            </div>
+                            <div id="currentShowArea" class="panel-body">
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4><strong>Old Shows</strong></h4>
+                            </div>
+                            <div class="panel-body">
+                                <table id="oldShowTable" class="table table-striped">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Title</th>
+                                        <th>Hashtag</th>
+                                        <th>Other Terms</th>
+                                        <th># of Tweets</th>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                var socket = io.connect();
+                socket.emit('moderator');
+                socket.emit('get old shows');
+
+                var $alertArea = $('#alertArea');
+                var $currentShowArea = $('#currentShowArea')
+                var $oldShowTable = $('#oldShowTable');
+
+                socket.on('old shows', function(data) {
+
+                    for (i = 0; i < data.length; i++) {
+                        $oldShowTable.append(displayShows(data[i]));
+                    }
+
+                });
+
+                socket.on('tweet status', function(data) {
+                    if (data.success === true) {
+                        $alertArea.append(
+                            '<div class="alert alert-success alert-dismissable" role="alert">' +
+                                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+                                '<i class="fa fa-info-circle"></i> <strong>Success!</strong> The tweet has been <strong>' + data.status + '</strong> successfully.' +
+                            '</div>'
+                        );
+                        $('#panel-tweet' + data.tweetId).slideUp(300);
+                    } else {
+                        $alertArea.append(
+                            '<div class="alert alert-warning alert-dismissable" role="alert">' +
+                                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+                                '<i class="fa fa-info-circle"></i> <strong>Warning!</strong> Something went wrong during your request. Please try again later.' +
+                            '</div>'
+                        );
+                    }
+
+                    $('.alert-dismissable').off().fadeTo(1000*3, 1).slideUp(1000, function() {
+                        $('.alert-dismissable').off().remove();
+                    });
+                });
+
+
+                socket.on('updateInfo', function(data) {
+                    $('#displayCount').html(data.displayCount);
+                    if (data.show.running === true) {
+                        $('#showStatus').html('<button class="btn btn-success navbar-btn">Current Show: ' + data.show.title +'</button>');
+
+                        $currentShowArea.append(
+                            '<div class="col-lg-12">' +
+                                '<h3>Title: ' + data.show.title + '</h3>' +
+                                '<h4>Hashtag</h4>' +
+                                '<p>' + data.show.hashtag + '</p>' +
+                                '<h4>Other Terms</h4>' +
+                                '<p>' + data.show.otherTerms + '</p>' +
+                            '</div>'
+                        );
+                    } else {
+                        $('#showStatus').html('<button class="btn btn-danger navbar-btn">Current Show: ' + data.show.title +'</button>');
+
+                        $alertArea.append(
+                            '<div class="alert alert-warning" role="alert"><i class="fa fa-info-circle"></i> Warning! Tweets will not show since there is not a show running. To start a show click <a href="/moderate/start_show">here</a>.</div>'
+                        );
+                    }
+                });
+
+                function displayShows(data) {
+                    return '<tr>' +
+                                '<td>' +
+                                    data.id +
+                                '</td>' +
+                                '<td>' +
+                                    data.title +
+                                '</td>' +
+                                '<td>' +
+                                    data.hashtag +
+                                '</td>' +
+                                '<td>' +
+                                    data.other_terms +
+                                '</td>' +
+                                '<td>' +
+                                    null +
+                                '</td>' +
+                            '</tr>'
+                };
+            });
+        </script>
+
+</body>
+
+</html>

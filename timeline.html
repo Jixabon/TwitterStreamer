@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html class="SandboxRoot var-fully-expanded env-bp-660">
+	<head>
+		<title>Tweet Test</title>
+		<style type="text/css">.SandboxRoot { display: none; }</style>
+		<link rel="stylesheet" type="text/css" href="https://platform.twitter.com/css/timeline.b8c9678c5f483d972f51f35dc84e4e40.light.ltr.css">
+	</head>
+	<body>
+		<div class="timeline-Widget" data-iframe-title="Twitter Timeline" lang="en" data-twitter-event-id="0">
+			<div class="timeline-Header" data-scribe="section:header" style="position: fixed; top: 0; z-index: 1000; background-color: white; width: 100%;">
+				<h1 class="timeline-Header-title" data-scribe="element:title"></h1>
+				<h2 class="timeline-Header-subtitle" data-scribe="element:byline">Created By Shawn Holmes</h2>
+				<p class="timeline-Header-description">Celebrate by Tweeting at the above Hashtag.</p>
+			</div>
+			<div class="timeline-Body customisable-border">
+				<div class="timeline-Body-notification timeline-NewTweetsNotification new-tweets-bar" role="alert" aria-live="polite" aria-atomic="false" aria-relevant="additions">
+					<button class="timeline-ShowMoreButton" data-scribe="element:show_new_tweets">Load new Tweets</button>
+				</div>
+
+				<div class="timeline-Viewport">
+					<ol class="timeline-TweetList" style="margin-top: 109px; z-index: 100;">
+							
+					</ol>
+				</div>
+			</div>
+		</div>
+
+		<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				var socket = io.connect();
+				socket.emit('Get Hashtag');
+
+				socket.on('Hashtag', function(data) {
+					$('.timeline-Header-title').html("#" + data);
+				});
+
+				var $timelineArea = $('.timeline-TweetList');
+
+				socket.on('new timeline tweet', function(tweet) {
+					$timelineArea.prepend(
+						'<li class="timeline-TweetList-tweet customisable-border">' + 
+							'<div class="timeline-Tweet  u-cf js-tweetIdInfo" data-tweet-id="" data-rendered-tweet-id="" data-scribe="component:tweet">' +
+								'<div class="timeline-Tweet-brand u-floatRight"><div class="Icon Icon--twitter " aria-label="" title="" role="presentation"></div></div>' +
+								'<div class="timeline-Tweet-author">' +
+									'<div class="TweetAuthor " data-scribe="component:author">' +
+							  			'<a class="TweetAuthor-link Identity u-linkBlend" data-scribe="element:user_link" href="" aria-label="">' +
+								    		'<span class="TweetAuthor-avatar Identity-avatar">' +
+								      			'<img class="Avatar" data-scribe="element:avatar" data-src-2x="" alt="" data-src-1x="" src="' + tweet.profile_image_url + '">' +
+								    		'</span>' +
+								    		'<span class="TweetAuthor-name Identity-name customisable-highlight" title="US Dept of Interior" data-scribe="element:name">' + tweet.user_name + '</span>' +
+								    		'<span class="TweetAuthor-verifiedBadge" data-scribe="element:verified_badge"><div class="Icon Icon--verified " aria-label="Verified Account" title="Verified Account" role="img"></div><b class="u-hiddenVisually">✔</b></span>' +
+								    		'<span class="TweetAuthor-screenName Identity-screenName" title="@Interior" data-scribe="element:screen_name" dir="ltr">@' + tweet.screen_name + '</span>' +
+							  			'</a>' +
+									'</div>' + 
+								'</div>' +
+
+							  	'<p class="timeline-Tweet-text" lang="en" dir="ltr">' + tweet.text + '</p>' +
+							'</div>' +
+						'</li>'
+					);
+				});
+
+				$("html, body").animate({scrollTop:getHeight()}, getSeconds());
+				setTimeout(function() {
+					$('html, body').animate({scrollTop:0}, getSeconds());
+				}, getSeconds());
+				var scrollTopBottom = setInterval(function() {
+					$("html, body").animate({scrollTop:getHeight()}, getSeconds());
+					setTimeout(function() {
+						$('html, body').animate({scrollTop:0}, getSeconds());
+					}, getSeconds());
+				}, getSeconds() * 2);
+
+				function getHeight() { 
+					//console.log('Height: ' + $(document).height());
+					return $(document).height();
+				};
+				function getSeconds() { 
+					//console.log('Seconds: ', (getHeight() / 85));
+					return 1000 * (getHeight() / 85);
+				};
+			});
+		</script>
+	</body>
+</html>
